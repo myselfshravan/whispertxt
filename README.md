@@ -13,7 +13,7 @@ Turn any audio or video into text, right in your browser. Free, open source, and
 - **Never loses progress.** Finished pieces are saved as they arrive. Hit Groq's rate limit and it waits and carries on. Reload the tab and you can continue where you stopped.
 - **Follows along.** The current word lights up during playback. Click any word to jump to it.
 - **Searches everything.** Find a word across all your transcripts and jump to the exact second.
-- **Exports** TXT, SRT, VTT and JSON, with word level timing in the JSON.
+- **Downloads** as a text file, SRT or VTT subtitles, or JSON with the timing of every word.
 
 ## Privacy
 

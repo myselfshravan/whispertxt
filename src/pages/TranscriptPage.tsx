@@ -1,12 +1,12 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { DownloadMenu } from '../components/DownloadMenu'
 import { Header } from '../components/Header'
 import { TranscriptBody } from '../components/TranscriptBody'
 import { Waveform } from '../components/Waveform'
 import { db, deleteTranscript } from '../lib/db'
-import { download } from '../lib/download'
-import { clock, EXPORT_FORMATS, humanDuration, render } from '../lib/format'
+import { clock, humanDuration } from '../lib/format'
 import { canResume, type LiveJob, resume, stop, useLiveJob } from '../lib/jobs'
 import type { Transcript } from '../lib/types'
 import { transcriptRoute } from '../router'
@@ -147,7 +147,7 @@ function Loaded({ transcript, startAt }: { transcript: Transcript; startAt?: num
       <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-10">
         {transcript.segments.length > 0 ? (
           <>
-            <Actions transcript={transcript} disabled={isWorking} />
+            <Actions transcript={transcript} disabled={isWorking} canPlay={canPlay} />
             <TranscriptBody
               segments={transcript.segments}
               words={transcript.words}
@@ -254,34 +254,40 @@ function Status({ transcript, job }: { transcript: Transcript; job: LiveJob | nu
   )
 }
 
-function Actions({ transcript, disabled }: { transcript: Transcript; disabled: boolean }) {
+function Actions({
+  transcript,
+  disabled,
+  canPlay,
+}: {
+  transcript: Transcript
+  disabled: boolean
+  canPlay: boolean
+}) {
   const [copied, setCopied] = useState(false)
-  const base = transcript.name.replace(/\.[^.]+$/, '')
 
   return (
-    <div className="mb-9 flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        onClick={async () => {
-          await navigator.clipboard.writeText(transcript.text)
-          setCopied(true)
-          setTimeout(() => setCopied(false), 1800)
-        }}
-        className="rounded-full bg-cobalt px-5 py-2 font-semibold text-white"
-      >
-        {copied ? 'Copied' : 'Copy text'}
-      </button>
-      {EXPORT_FORMATS.map((format) => (
+    <div className="mb-10">
+      <div className="relative flex flex-wrap items-center gap-2">
         <button
-          key={format}
           type="button"
-          disabled={disabled}
-          onClick={() => download(`${base}.${format}`, render(transcript, format))}
-          className="rounded-full border-2 border-line px-4 py-1.5 font-medium disabled:opacity-40"
+          onClick={async () => {
+            await navigator.clipboard.writeText(transcript.text)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1800)
+          }}
+          className="rounded-full bg-cobalt px-5 py-2 font-semibold text-white"
         >
-          {format.toUpperCase()}
+          {copied ? 'Copied' : 'Copy text'}
         </button>
-      ))}
+        <DownloadMenu transcript={transcript} disabled={disabled} />
+      </div>
+      <p className="mt-7 text-soft text-sm">
+        {disabled
+          ? 'You can download the transcript once it finishes.'
+          : canPlay
+            ? 'Click any word to play from there.'
+            : ''}
+      </p>
     </div>
   )
 }

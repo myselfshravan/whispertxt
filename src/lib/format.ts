@@ -1,7 +1,12 @@
 import type { Segment, Transcript } from './types'
 
-export const EXPORT_FORMATS = ['txt', 'srt', 'vtt', 'json'] as const
-export type ExportFormat = (typeof EXPORT_FORMATS)[number]
+export const EXPORT_OPTIONS = [
+  { format: 'txt', label: 'Text file', hint: 'The plain transcript, to read or paste' },
+  { format: 'srt', label: 'Subtitles', hint: 'For video editors and media players' },
+  { format: 'vtt', label: 'Web subtitles', hint: 'For videos on websites' },
+  { format: 'json', label: 'Data file', hint: 'Includes the timing of every word' },
+] as const
+export type ExportFormat = (typeof EXPORT_OPTIONS)[number]['format']
 
 /** Rounds to whole milliseconds first so 1.9996 becomes 00:00:02,000, never 00:00:01,1000. */
 export function subtitleTime(seconds: number, separator: ',' | '.'): string {

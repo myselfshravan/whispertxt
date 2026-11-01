@@ -18,7 +18,9 @@ test('transcribes a real file through real Groq', async ({ page }) => {
   const started = Date.now()
   await page.getByLabel('Choose audio or video files').setInputFiles(REAL_FILE as string)
 
-  await expect(page.getByRole('button', { name: 'SRT' })).toBeEnabled({ timeout: 570_000 })
+  await expect(page.getByRole('button', { name: 'Download', exact: true })).toBeEnabled({
+    timeout: 570_000,
+  })
 
   const summary = await page.evaluate(async () => {
     const { db } = await new Promise<{ db: IDBDatabase }>((resolve, reject) => {

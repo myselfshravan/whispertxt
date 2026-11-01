@@ -37,10 +37,13 @@ async function choose(page: Page, name: string) {
   await page.getByLabel('Choose audio or video files').setInputFiles(`${FIXTURES}/${name}`)
 }
 
-async function downloaded(page: Page, label: string): Promise<string> {
+const downloadButton = (page: Page) => page.getByRole('button', { name: 'Download', exact: true })
+
+async function downloaded(page: Page, label: RegExp): Promise<string> {
+  await downloadButton(page).click()
   const [file] = await Promise.all([
     page.waitForEvent('download'),
-    page.getByRole('button', { name: label, exact: true }).click(),
+    page.getByRole('button', { name: label }).click(),
   ])
   const stream = await file.createReadStream()
   const parts: Buffer[] = []
@@ -78,15 +81,44 @@ test('a long file gets correct timestamps across chunks', async ({ page }) => {
   await open(page)
   await choose(page, 'long.m4a')
 
-  await expect(page.getByRole('button', { name: 'SRT' })).toBeEnabled({ timeout: 60_000 })
+  await expect(downloadButton(page)).toBeEnabled({ timeout: 60_000 })
   await expect(page.getByText(/11 min/)).toBeVisible()
   expect(seen).toHaveLength(3)
 
-  const srt = await downloaded(page, 'SRT')
+  const srt = await downloaded(page, /^Subtitles/)
   expect(srt).toContain('00:05:01,000 --> 00:05:02,000')
   expect(srt).toContain('00:10:01,000 --> 00:10:02,000')
-  const vtt = await downloaded(page, 'VTT')
+  const vtt = await downloaded(page, /^Web subtitles/)
   expect(vtt.startsWith('WEBVTT')).toBe(true)
+})
+
+test('download explains each format and confirms the file', async ({ page }) => {
+  await page.route(GROQ, (route) => route.fulfill(reply('tone')))
+  await open(page)
+  await choose(page, 'short.mp3')
+  await expect(page.getByText('Hello from tone.')).toBeVisible()
+  await expect(page.getByText('Click any word to play from there.')).toBeVisible()
+
+  await downloadButton(page).click()
+  await expect(page.getByText('For video editors and media players')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByText('For video editors and media players')).toBeHidden()
+  await expect(downloadButton(page)).toBeFocused()
+
+  await downloaded(page, /^Text file/)
+  await expect(page.getByText('Downloaded short.txt')).toBeVisible()
+})
+
+test('the download menu fits on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.route(GROQ, (route) => route.fulfill(reply('tone')))
+  await open(page)
+  await choose(page, 'short.mp3')
+  await downloadButton(page).click()
+
+  const box = await page.locator('#download-options').boundingBox()
+  expect(box?.x).toBeGreaterThanOrEqual(0)
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390)
 })
 
 test('waits out a rate limit and finishes', async ({ page }) => {
@@ -157,7 +189,7 @@ test('resumes after a failure without resending finished chunks', async ({ page 
   await expect(page.getByText(/11 min/)).toBeVisible({ timeout: 60_000 })
   // Three chunks exist and at least one was saved, so a resume sends two at most.
   expect(calls - before).toBeLessThanOrEqual(2)
-  const srt = await downloaded(page, 'SRT')
+  const srt = await downloaded(page, /^Subtitles/)
   expect(srt).toContain('00:10:01,000 --> 00:10:02,000')
 })
 

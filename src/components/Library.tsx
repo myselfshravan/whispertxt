@@ -203,7 +203,7 @@ function GettingStarted() {
         <li>
           <p className="font-semibold text-lg">3. Read and export</p>
           <p className="text-soft leading-relaxed">
-            Follow along word by word, search it, or download TXT, SRT, VTT or JSON.
+            Follow along word by word, search it, or download it as text or subtitles.
           </p>
         </li>
       </ol>
