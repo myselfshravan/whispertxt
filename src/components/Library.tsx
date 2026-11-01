@@ -45,8 +45,6 @@ export function Library() {
   const transcripts = useLiveQuery(() => db.transcripts.orderBy('createdAt').reverse().toArray())
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query.trim())
-  const [notice, setNotice] = useState('')
-  const importInput = useRef<HTMLInputElement>(null)
 
   const matches = useMemo(() => {
     const all = transcripts ?? []
@@ -125,33 +123,45 @@ export function Library() {
         >
           Back up all transcripts
         </button>
-        <button
-          type="button"
-          className="underline underline-offset-3"
-          onClick={() => importInput.current?.click()}
-        >
-          Restore a backup
-        </button>
-        <input
-          ref={importInput}
-          type="file"
-          accept=".json,application/json"
-          hidden
-          onChange={async (event) => {
-            const file = event.target.files?.[0]
-            event.target.value = ''
-            if (!file) return
-            try {
-              const count = await importLibrary(await file.text())
-              setNotice(`Restored ${count} ${count === 1 ? 'transcript' : 'transcripts'}.`)
-            } catch (error) {
-              setNotice(error instanceof Error ? error.message : 'Could not read that backup.')
-            }
-          }}
-        />
-        {notice && <span role="status">{notice}</span>}
+        <RestoreBackup />
       </div>
     </section>
+  )
+}
+
+function RestoreBackup() {
+  const [notice, setNotice] = useState('')
+  const input = useRef<HTMLInputElement>(null)
+
+  return (
+    <>
+      <button
+        type="button"
+        className="underline underline-offset-3"
+        onClick={() => input.current?.click()}
+      >
+        Restore a backup
+      </button>
+      <input
+        ref={input}
+        type="file"
+        accept=".json,application/json"
+        hidden
+        aria-label="Choose a backup file"
+        onChange={async (event) => {
+          const file = event.target.files?.[0]
+          event.target.value = ''
+          if (!file) return
+          try {
+            const count = await importLibrary(await file.text())
+            setNotice(`Restored ${count} ${count === 1 ? 'transcript' : 'transcripts'}.`)
+          } catch (error) {
+            setNotice(error instanceof Error ? error.message : 'Could not read that backup.')
+          }
+        }}
+      />
+      {notice && <span role="status">{notice}</span>}
+    </>
   )
 }
 
@@ -197,6 +207,9 @@ function GettingStarted() {
           </p>
         </li>
       </ol>
+      <p className="mt-8 text-soft text-sm">
+        Moved from another browser? <RestoreBackup />
+      </p>
     </section>
   )
 }

@@ -194,6 +194,35 @@ test('search finds a word and history survives a reload', async ({ page }) => {
   await expect(page.getByText('Second line.')).toBeVisible()
 })
 
+test('restores a backup into an empty library', async ({ page }) => {
+  await open(page)
+  await page.getByLabel('Choose a backup file').setInputFiles({
+    name: 'backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(
+      JSON.stringify({
+        format: 'whispertxt-backup',
+        version: 1,
+        transcripts: [
+          {
+            id: 'restored',
+            name: 'old-recording.m4a',
+            createdAt: 1,
+            fingerprint: 'x',
+            status: 'done',
+            duration: 90,
+            peaks: [],
+            text: 'Restored words.',
+            segments: [{ text: 'Restored words.', start: 1, end: 2 }],
+            words: [],
+          },
+        ],
+      }),
+    ),
+  })
+  await expect(page.getByRole('link', { name: 'old-recording.m4a' })).toBeVisible()
+})
+
 test('only ever talks to its own origin and Groq', async ({ page }) => {
   const hosts = new Set<string>()
   page.on('request', (request) => {
