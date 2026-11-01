@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cobalt: #2230f0;
+  --color-cobalt-deep: #1722b8;
+  --color-marker: #f4ff52;
+  --color-paper: #f7f8ff;
+  --color-ink: #0d1240;
+  --color-line: #d5d9f5;
+  --color-soft: #565d94;
+  --color-alert: #c9301a;
+  --font-sans: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-read: "Newsreader Variable", ui-serif, Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #0d1240;
+    --color-ink: #eef0ff;
+    --color-line: #2c3373;
+    --color-soft: #a4aadb;
+    --color-alert: #ff8a73;
+  }
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-marker);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-ink);
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--color-marker);
+  color: #0d1240;
+}
+
+.word {
+  cursor: pointer;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.06em;
+  margin-inline: -0.06em;
+}
+
+.word:hover {
+  background: color-mix(in srgb, var(--color-marker) 45%, transparent);
+  color: #0d1240;
+}
+
+.word.is-active {
+  background: var(--color-marker);
+  color: #0d1240;
+}
+
+mark {
+  background: var(--color-marker);
+  color: #0d1240;
+  border-radius: 3px;
+  padding-inline: 0.06em;
+}
+
+dialog::backdrop {
+  background: rgb(13 18 64 / 0.6);
+}

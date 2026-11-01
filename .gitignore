@@ -1,0 +1,9 @@
+node_modules/
+dist/
+public/ffmpeg/
+.vercel/
+.env*
+.DS_Store
+test-results/
+playwright-report/
+e2e/fixtures/
